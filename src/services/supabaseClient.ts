@@ -72,10 +72,10 @@ export const getTicketDetails = async (ticketId: string) => {
     
     return {
       ticketId: data.id,
-      eventId: data.events.id,
-      eventName: data.events.name,
-      userName: data.users.name,
-      userEmail: data.users.email,
+      eventId: data.events?.id,
+      eventName: data.events?.name,
+      userName: data.users?.name,
+      userEmail: data.users?.email,
       bookingDate: data.booking_date,
       ticketImage: data.ticket_image,
       qrCode: data.qr_code,
