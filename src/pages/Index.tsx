@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Infinity } from 'lucide-react';
 import ChatInterface from '@/components/ChatInterface';
 
 const Index = () => {
@@ -16,10 +17,10 @@ const Index = () => {
             className="flex items-center space-x-2"
           >
             <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground text-lg font-bold">T</span>
+              <Infinity className="text-primary-foreground h-5 w-5" />
             </div>
             <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              TicketChat
+              InfiBot
             </h1>
           </motion.div>
         </div>
@@ -35,7 +36,7 @@ const Index = () => {
           className="lg:w-1/3 space-y-6"
         >
           <div className="glass-panel p-6 rounded-2xl">
-            <h2 className="text-2xl font-bold mb-4">Welcome to TicketChat</h2>
+            <h2 className="text-2xl font-bold mb-4">Welcome to InfiBot</h2>
             <p className="text-muted-foreground mb-4">
               Discover and book event tickets through a simple conversation with our AI assistant.
             </p>
@@ -92,7 +93,7 @@ const Index = () => {
           </div>
           
           <div className="bg-white p-6 rounded-2xl border border-border shadow-sm">
-            <h3 className="text-lg font-semibold mb-3">Why Use TicketChat?</h3>
+            <h3 className="text-lg font-semibold mb-3">Why Use InfiBot?</h3>
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
@@ -128,7 +129,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="py-6 px-8 border-t border-border/40 bg-white/60 backdrop-blur-sm">
         <div className="container mx-auto text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} TicketChat. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} InfiBot. All rights reserved.</p>
           <p className="mt-1">Powered by Gemini AI and Supabase</p>
         </div>
       </footer>

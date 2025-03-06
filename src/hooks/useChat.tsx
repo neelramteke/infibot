@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage, Event, UserInfo, City, EventCategory } from '@/lib/types';
 import geminiService from '@/services/geminiService';
 import eventsService from '@/services/eventsService';
-import { saveUserInfo, saveBooking } from '@/services/supabaseClient';
+import { saveUserInfo, saveBooking, getTicketDetails } from '@/services/supabaseClient';
 import { toast } from 'sonner';
 
 export function useChat() {
@@ -21,36 +21,26 @@ export function useChat() {
     'initial' | 'citySelection' | 'categorySelection' | 'eventSelection' | 'eventInfo' | 'userForm' | 'complete'
   >('initial');
 
-  // Initialize chat with welcome message
+  // Helper function to get appropriate greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
+  // Initialize chat waiting for user message
   useEffect(() => {
     const initChat = async () => {
-      setLoading(true);
       try {
-        const welcomeMessage = await geminiService.getWelcomeMessage();
-        
         const citiesData = await eventsService.getIndianCities();
         setCities(citiesData);
         
         const categoriesData = await eventsService.getEventCategories();
         setCategories(categoriesData);
-        
-        setMessages([
-          {
-            id: uuidv4(),
-            role: 'bot',
-            content: welcomeMessage,
-            timestamp: new Date(),
-            type: 'citySelection',
-            options: citiesData.map(city => city.name),
-          },
-        ]);
-        
-        setChatState('citySelection');
       } catch (error) {
-        console.error('Error initializing chat:', error);
-        toast.error('Failed to initialize chat. Please refresh the page.');
-      } finally {
-        setLoading(false);
+        console.error('Error loading initial data:', error);
+        toast.error('Failed to load initial data. Please refresh the page.');
       }
     };
     
@@ -74,8 +64,21 @@ export function useChat() {
     setLoading(true);
     
     try {
-      // Handle different chat states
-      if (chatState === 'citySelection') {
+      // If this is the first message, send a welcome greeting
+      if (messages.length === 0) {
+        const greeting = `Hey! ${getGreeting()}! Welcome to InfiBot. I'm your event booking assistant.`;
+        addBotMessage(greeting, 'text');
+        
+        // After greeting, show city selection
+        const citiesData = await eventsService.getIndianCities();
+        addBotMessage(
+          'Please select a city where you want to explore events:',
+          'citySelection',
+          { options: citiesData.map(city => city.name) }
+        );
+        
+        setChatState('citySelection');
+      } else if (chatState === 'citySelection') {
         await handleCitySelection(content);
       } else if (chatState === 'categorySelection') {
         await handleCategorySelection(content);
@@ -94,7 +97,7 @@ export function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [chatState, cities, categories, selectedCity, selectedCategory, selectedEvent]);
+  }, [chatState, cities, categories, selectedCity, selectedCategory, selectedEvent, messages.length]);
 
   // Helper to add bot message
   const addBotMessage = useCallback((content: string, type: ChatMessage['type'] = 'text', extras = {}) => {
@@ -265,7 +268,11 @@ export function useChat() {
       setTicketImage(ticketImg);
       
       // Save booking to Supabase
-      await saveBooking(selectedEvent.id, userId, ticketImg, qrCodeUrl);
+      const savedBookingId = await saveBooking(selectedEvent.id, userId, ticketImg, qrCodeUrl);
+      
+      if (!savedBookingId) {
+        throw new Error('Failed to save booking');
+      }
       
       // Get booking confirmation message
       const confirmationMessage = await geminiService.getBookingConfirmation(
@@ -280,12 +287,34 @@ export function useChat() {
         { ticketImage: ticketImg }
       );
       
+      // Add thank you message
+      setTimeout(() => {
+        addBotMessage(
+          `Thank you for booking with InfiBot! We hope you enjoy your event. Please visit us again soon for more exciting events!`,
+          'text'
+        );
+      }, 1000);
+      
       setChatState('complete');
     } catch (error) {
       console.error('Error processing booking:', error);
       toast.error('Failed to process your booking. Please try again.');
     }
   }, [selectedEvent, addBotMessage]);
+
+  // Book event from user form component
+  const bookEvent = useCallback(async (userInfo: UserInfo) => {
+    // Format user info as a message
+    const formattedInfo = `
+      Name: ${userInfo.name}
+      Age: ${userInfo.age}
+      Gender: ${userInfo.gender}
+      Phone: ${userInfo.phone}
+      Email: ${userInfo.email}
+    `.trim();
+    
+    await sendMessage(formattedInfo);
+  }, [sendMessage]);
 
   // Select city directly from options
   const selectCity = useCallback(async (cityName: string) => {
@@ -300,20 +329,6 @@ export function useChat() {
   // Select event directly from options
   const selectEvent = useCallback(async (eventName: string) => {
     await sendMessage(eventName);
-  }, [sendMessage]);
-
-  // Book event
-  const bookEvent = useCallback(async (userInfo: UserInfo) => {
-    // Format user info as a message
-    const formattedInfo = `
-      Name: ${userInfo.name}
-      Age: ${userInfo.age}
-      Gender: ${userInfo.gender}
-      Phone: ${userInfo.phone}
-      Email: ${userInfo.email}
-    `.trim();
-    
-    await sendMessage(formattedInfo);
   }, [sendMessage]);
 
   return {

@@ -79,6 +79,18 @@ const ChatInterface: React.FC = () => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Auto send a message when the chat is empty to initiate the conversation
+  useEffect(() => {
+    if (messages.length === 0) {
+      // Small timeout to make it seem like the user is typing
+      const timer = setTimeout(() => {
+        sendMessage("Hi");
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, sendMessage]);
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Chat header */}
