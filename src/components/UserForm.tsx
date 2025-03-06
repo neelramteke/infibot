@@ -5,9 +5,10 @@ import { UserInfo } from '@/lib/types';
 
 interface UserFormProps {
   onSubmit: (userInfo: UserInfo) => void;
+  eventId: string;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
+const UserForm: React.FC<UserFormProps> = ({ onSubmit, eventId }) => {
   const [userInfo, setUserInfo] = useState<UserInfo>({
     name: '',
     age: 0,
@@ -15,6 +16,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
     phone: '',
     email: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -24,7 +26,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Simple validation
@@ -48,7 +50,16 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
       return;
     }
     
-    onSubmit(userInfo);
+    try {
+      setIsSubmitting(true);
+      // Pass the data to parent component for processing
+      onSubmit(userInfo);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast.error('Error submitting form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -62,6 +73,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
           placeholder="Full Name"
           className="input-primary text-sm"
           required
+          disabled={isSubmitting}
         />
       </div>
       
@@ -77,6 +89,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
             max="120"
             className="input-primary text-sm"
             required
+            disabled={isSubmitting}
           />
         </div>
         
@@ -87,6 +100,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
             onChange={handleChange}
             className="input-primary text-sm"
             required
+            disabled={isSubmitting}
           >
             <option value="" disabled>Select Gender</option>
             <option value="Male">Male</option>
@@ -107,6 +121,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
           pattern="[0-9]{10}"
           className="input-primary text-sm"
           required
+          disabled={isSubmitting}
         />
       </div>
       
@@ -119,14 +134,18 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
           placeholder="Email Address"
           className="input-primary text-sm"
           required
+          disabled={isSubmitting}
         />
       </div>
       
+      <input type="hidden" name="eventId" value={eventId} />
+      
       <button
         type="submit"
-        className="btn-primary w-full text-sm"
+        className="btn-gradient w-full text-sm"
+        disabled={isSubmitting}
       >
-        Submit Booking
+        {isSubmitting ? 'Processing...' : 'Submit Booking'}
       </button>
     </form>
   );

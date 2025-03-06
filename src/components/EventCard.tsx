@@ -7,6 +7,7 @@ import { Calendar, Clock, MapPin, Tag, IndianRupee } from 'lucide-react';
 interface EventCardProps {
   event: Event;
   onClick: () => void;
+  onBookClick?: () => void;
   compact?: boolean;
   showDetails?: boolean;
   showBookButton?: boolean;
@@ -15,6 +16,7 @@ interface EventCardProps {
 const EventCard: React.FC<EventCardProps> = ({ 
   event, 
   onClick, 
+  onBookClick,
   compact = false,
   showDetails = false,
   showBookButton = false
@@ -99,8 +101,11 @@ const EventCard: React.FC<EventCardProps> = ({
         
         {showBookButton && (
           <button 
-            onClick={onClick}
-            className="mt-4 w-full btn-primary flex items-center justify-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBookClick?.();
+            }}
+            className="mt-4 w-full btn-gradient flex items-center justify-center gap-2"
           >
             Book Tickets
           </button>

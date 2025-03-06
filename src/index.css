@@ -112,6 +112,10 @@
     @apply bg-white/80 dark:bg-black/60 backdrop-blur-md border border-white/20 dark:border-black/20 shadow-lg;
   }
   
+  .navbar-glass {
+    @apply fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-black/70 backdrop-blur-md border-b border-border/40;
+  }
+  
   .chat-bubble-user {
     @apply bg-primary text-primary-foreground rounded-2xl rounded-br-sm px-4 py-3 max-w-[80%] shadow-sm;
   }
@@ -130,6 +134,14 @@
   
   .btn-ghost {
     @apply bg-transparent hover:bg-muted transition-all duration-200 rounded-xl px-4 py-2.5 font-medium;
+  }
+  
+  .btn-gradient {
+    @apply bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white transition-all duration-300 rounded-xl px-4 py-2.5 font-medium shadow-sm;
+  }
+  
+  .btn-gradient-secondary {
+    @apply bg-gradient-to-r from-slate-200 to-blue-100 hover:from-slate-300 hover:to-blue-200 text-slate-700 transition-all duration-300 rounded-xl px-4 py-2.5 font-medium;
   }
   
   .input-primary {

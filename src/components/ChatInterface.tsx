@@ -21,7 +21,8 @@ const ChatInterface: React.FC = () => {
     selectCity, 
     selectCategory, 
     selectEvent, 
-    bookEvent 
+    bookEvent,
+    submitUserInfo
   } = useChat();
 
   // Handle sending messages
@@ -93,26 +94,10 @@ const ChatInterface: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Chat header */}
-      <div className="p-4 border-b border-border bg-white dark:bg-card flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-            <span className="text-sm font-semibold">AI</span>
-          </div>
-          <div>
-            <h2 className="font-semibold">Event Booking Assistant</h2>
-            <div className="flex items-center text-xs text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></div>
-              <span>Online</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Messages container */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-2 bg-slate-50"
+        className="flex-1 overflow-y-auto p-4 space-y-2 bg-slate-50 dark:bg-slate-900"
       >
         {messages.map((msg) => (
           <ChatMessage
@@ -121,7 +106,8 @@ const ChatInterface: React.FC = () => {
             onSelectCity={selectCity}
             onSelectCategory={selectCategory}
             onSelectEvent={selectEvent}
-            onSubmitUserInfo={bookEvent}
+            onBookEvent={bookEvent}
+            onSubmitUserInfo={submitUserInfo}
           />
         ))}
 
@@ -192,7 +178,7 @@ const ChatInterface: React.FC = () => {
         <button
           onClick={handleSendMessage}
           disabled={!message.trim() || loading}
-          className={`btn-primary p-2 rounded-full ${
+          className={`btn-gradient p-2 rounded-full ${
             !message.trim() || loading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >

@@ -13,6 +13,7 @@ interface ChatMessageProps {
   onSelectCity: (city: string) => void;
   onSelectCategory: (category: string) => void;
   onSelectEvent: (event: string) => void;
+  onBookEvent: (eventId: string) => void;
   onSubmitUserInfo: (userInfo: any) => void;
 }
 
@@ -21,6 +22,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   onSelectCity,
   onSelectCategory,
   onSelectEvent,
+  onBookEvent,
   onSubmitUserInfo,
 }) => {
   const isUser = message.role === 'user';
@@ -64,7 +66,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 <button
                   key={city}
                   onClick={() => onSelectCity(city)}
-                  className="btn-secondary text-sm"
+                  className="btn-gradient-secondary text-sm"
                 >
                   {city}
                 </button>
@@ -82,7 +84,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 <button
                   key={category}
                   onClick={() => onSelectCategory(category)}
-                  className="btn-secondary text-sm"
+                  className="btn-gradient-secondary text-sm"
                 >
                   {category}
                 </button>
@@ -117,15 +119,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               showDetails
               showBookButton
               onClick={() => {}}
+              onBookClick={() => onBookEvent(message.selectedEvent?.id || '')}
             />
           </div>
         )}
 
         {/* User form */}
-        {message.type === 'userForm' && (
+        {message.type === 'userForm' && message.selectedEvent && (
           <div className="space-y-4">
             <div className="whitespace-pre-wrap">{message.content}</div>
-            <UserForm onSubmit={onSubmitUserInfo} />
+            <UserForm onSubmit={(userInfo) => onSubmitUserInfo(userInfo)} eventId={message.selectedEvent.id} />
           </div>
         )}
 

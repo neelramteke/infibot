@@ -208,12 +208,27 @@ export function useChat() {
       { selectedEvent: matchedEvent }
     );
     
-    // After displaying event info, ask for user info
+    setChatState('eventInfo');
+  }, [events, addBotMessage]);
+
+  // Handle book event button click
+  const bookEvent = useCallback(async (eventId: string) => {
+    const matchedEvent = events.find(event => event.id === eventId);
+    
+    if (!matchedEvent) {
+      toast.error('Event not found. Please try again.');
+      return;
+    }
+    
+    setSelectedEvent(matchedEvent);
+    
+    // Get user info prompt
     const userInfoPrompt = await geminiService.getUserInfoPrompt(matchedEvent.name);
     
     addBotMessage(
       userInfoPrompt,
-      'userForm'
+      'userForm',
+      { selectedEvent: matchedEvent }
     );
     
     setChatState('userForm');
@@ -241,7 +256,8 @@ export function useChat() {
       if (!userInfo.name || !userInfo.email || !userInfo.phone) {
         addBotMessage(
           'Please provide all required information in the format: Name: Your Name, Age: Your Age, Gender: Your Gender, Phone: Your Phone, Email: Your Email',
-          'userForm'
+          'userForm',
+          { selectedEvent }
         );
         return;
       }
@@ -302,19 +318,69 @@ export function useChat() {
     }
   }, [selectedEvent, addBotMessage]);
 
-  // Book event from user form component
-  const bookEvent = useCallback(async (userInfo: UserInfo) => {
-    // Format user info as a message
-    const formattedInfo = `
-      Name: ${userInfo.name}
-      Age: ${userInfo.age}
-      Gender: ${userInfo.gender}
-      Phone: ${userInfo.phone}
-      Email: ${userInfo.email}
-    `.trim();
+  // Submit user info from form component
+  const submitUserInfo = useCallback(async (userInfo: UserInfo) => {
+    if (!selectedEvent) {
+      toast.error('No event selected. Please start over.');
+      return;
+    }
     
-    await sendMessage(formattedInfo);
-  }, [sendMessage]);
+    try {
+      // Save user info to Supabase
+      const userId = await saveUserInfo(userInfo);
+      
+      if (!userId) {
+        throw new Error('Failed to save user information');
+      }
+      
+      // Generate QR code
+      const bookingId = `${selectedEvent.id}-${userId}-${Date.now()}`;
+      const qrCodeUrl = await eventsService.generateQRCode(bookingId);
+      
+      // Generate ticket image
+      const ticketImg = await eventsService.generateTicketImage(
+        selectedEvent.name,
+        userInfo.name,
+        selectedEvent.date,
+        qrCodeUrl
+      );
+      
+      setTicketImage(ticketImg);
+      
+      // Save booking to Supabase
+      const savedBookingId = await saveBooking(selectedEvent.id, userId, ticketImg, qrCodeUrl);
+      
+      if (!savedBookingId) {
+        throw new Error('Failed to save booking');
+      }
+      
+      // Get booking confirmation message
+      const confirmationMessage = await geminiService.getBookingConfirmation(
+        selectedEvent.name,
+        userInfo.name
+      );
+      
+      // Add bot message with ticket
+      addBotMessage(
+        confirmationMessage,
+        'ticket',
+        { ticketImage: ticketImg }
+      );
+      
+      // Add thank you message
+      setTimeout(() => {
+        addBotMessage(
+          `Thank you for booking with InfiBot! We hope you enjoy your event. Please visit us again soon for more exciting events!`,
+          'text'
+        );
+      }, 1000);
+      
+      setChatState('complete');
+    } catch (error) {
+      console.error('Error processing booking:', error);
+      toast.error('Failed to process your booking. Please try again.');
+    }
+  }, [selectedEvent, addBotMessage]);
 
   // Select city directly from options
   const selectCity = useCallback(async (cityName: string) => {
@@ -339,6 +405,7 @@ export function useChat() {
     selectCategory,
     selectEvent,
     bookEvent,
+    submitUserInfo,
     chatState,
   };
 }
