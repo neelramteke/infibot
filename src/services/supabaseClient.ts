@@ -11,19 +11,21 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const saveUserInfo = async (userInfo: UserInfo) => {
   try {
+    // Insert user info into the users table
     const { data, error } = await supabase
       .from('users')
-      .upsert({
+      .insert({
         name: userInfo.name,
         age: userInfo.age,
         gender: userInfo.gender,
         phone: userInfo.phone,
-        email: userInfo.email,
+        email: userInfo.email
       })
-      .select('id');
+      .select('id')
+      .single();
 
     if (error) throw error;
-    return data?.[0]?.id;
+    return data?.id;
   } catch (error) {
     console.error('Error saving user info:', error);
     toast.error('Failed to save user information');
@@ -33,6 +35,7 @@ export const saveUserInfo = async (userInfo: UserInfo) => {
 
 export const saveBooking = async (eventId: string, userId: string, ticketImage: string, qrCode: string) => {
   try {
+    // Insert booking info into the bookings table
     const { data, error } = await supabase
       .from('bookings')
       .insert({
@@ -40,12 +43,13 @@ export const saveBooking = async (eventId: string, userId: string, ticketImage: 
         user_id: userId,
         booking_date: new Date().toISOString(),
         ticket_image: ticketImage,
-        qr_code: qrCode,
+        qr_code: qrCode
       })
-      .select('id');
+      .select('id')
+      .single();
 
     if (error) throw error;
-    return data?.[0]?.id;
+    return data?.id;
   } catch (error) {
     console.error('Error saving booking:', error);
     toast.error('Failed to save booking');
@@ -55,6 +59,7 @@ export const saveBooking = async (eventId: string, userId: string, ticketImage: 
 
 export const getTicketDetails = async (ticketId: string) => {
   try {
+    // Join bookings with users to get all the necessary information
     const { data, error } = await supabase
       .from('bookings')
       .select(`
@@ -62,21 +67,23 @@ export const getTicketDetails = async (ticketId: string) => {
         booking_date,
         ticket_image,
         qr_code,
-        events:event_id(id, name),
-        users:user_id(name, email)
+        event_id,
+        users (
+          name,
+          email
+        )
       `)
       .eq('id', ticketId)
       .single();
 
     if (error) throw error;
     
-    // The join query returns nested objects, we need to access their properties correctly
     return {
       ticketId: data.id,
-      eventId: data.events?.[0]?.id,
-      eventName: data.events?.[0]?.name,
-      userName: data.users?.[0]?.name,
-      userEmail: data.users?.[0]?.email,
+      eventId: data.event_id,
+      eventName: '', // We'll need to fetch this separately or update the query
+      userName: data.users?.name,
+      userEmail: data.users?.email,
       bookingDate: data.booking_date,
       ticketImage: data.ticket_image,
       qrCode: data.qr_code,

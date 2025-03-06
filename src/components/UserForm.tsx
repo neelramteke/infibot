@@ -52,6 +52,7 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, eventId }) => {
     
     try {
       setIsSubmitting(true);
+      console.log('Submitting user info:', userInfo);
       // Pass the data to parent component for processing
       onSubmit(userInfo);
     } catch (error) {

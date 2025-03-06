@@ -40,8 +40,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       {!isUser && (
         <div className="mr-2 flex-shrink-0">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder.svg" alt="Bot" />
-            <AvatarFallback className="bg-primary text-primary-foreground">AI</AvatarFallback>
+            <AvatarImage src="/bot-avatar.svg" alt="Bot" />
+            <AvatarFallback className="bg-primary text-primary-foreground">
+              <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" rx="50" fill="#5E35B1"/>
+                <path d="M30 40C30 34.4772 34.4772 30 40 30H60C65.5228 30 70 34.4772 70 40V60C70 65.5228 65.5228 70 60 70H40C34.4772 70 30 65.5228 30 60V40Z" fill="#D1C4E9"/>
+                <circle cx="40" cy="45" r="5" fill="#311B92"/>
+                <circle cx="60" cy="45" r="5" fill="#311B92"/>
+                <path d="M37.5 60C37.5 60 40 65 50 65C60 65 62.5 60 62.5 60" stroke="#311B92" strokeWidth="3" strokeLinecap="round"/>
+              </svg>
+            </AvatarFallback>
           </Avatar>
         </div>
       )}

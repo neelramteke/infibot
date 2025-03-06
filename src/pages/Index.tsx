@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Infinity, Sun, Moon } from 'lucide-react';
+import { Infinity } from 'lucide-react';
 import ChatInterface from '@/components/ChatInterface';
 import ThemeToggle from '@/components/ThemeToggle';
 import { ThemeProvider } from '@/hooks/useTheme';
@@ -11,7 +11,7 @@ const Index = () => {
     <ThemeProvider>
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-indigo-950">
         {/* Header */}
-        <header className="navbar-glass py-6 px-8">
+        <header className="fixed w-full top-0 z-10 backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border-b border-border/40 py-4 px-8">
           <div className="container mx-auto flex justify-between items-center">
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -32,7 +32,7 @@ const Index = () => {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 mt-16">
+        <main className="flex-1 container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 mt-24">
           {/* Left column - Information */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}

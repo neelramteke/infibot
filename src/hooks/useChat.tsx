@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage, Event, UserInfo, City, EventCategory } from '@/lib/types';
@@ -38,6 +37,19 @@ export function useChat() {
         
         const categoriesData = await eventsService.getEventCategories();
         setCategories(categoriesData);
+        
+        // Start with a greeting message
+        const greeting = `Hey! ${getGreeting()}! Welcome to InfiBot. I'm your event booking assistant.`;
+        addBotMessage(greeting, 'text');
+        
+        // After greeting, show city selection
+        addBotMessage(
+          'Please select a city where you want to explore events:',
+          'citySelection',
+          { options: citiesData.map(city => city.name) }
+        );
+        
+        setChatState('citySelection');
       } catch (error) {
         console.error('Error loading initial data:', error);
         toast.error('Failed to load initial data. Please refresh the page.');
@@ -64,21 +76,7 @@ export function useChat() {
     setLoading(true);
     
     try {
-      // If this is the first message, send a welcome greeting
-      if (messages.length === 0) {
-        const greeting = `Hey! ${getGreeting()}! Welcome to InfiBot. I'm your event booking assistant.`;
-        addBotMessage(greeting, 'text');
-        
-        // After greeting, show city selection
-        const citiesData = await eventsService.getIndianCities();
-        addBotMessage(
-          'Please select a city where you want to explore events:',
-          'citySelection',
-          { options: citiesData.map(city => city.name) }
-        );
-        
-        setChatState('citySelection');
-      } else if (chatState === 'citySelection') {
+      if (chatState === 'citySelection') {
         await handleCitySelection(content);
       } else if (chatState === 'categorySelection') {
         await handleCategorySelection(content);
@@ -97,7 +95,7 @@ export function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [chatState, cities, categories, selectedCity, selectedCategory, selectedEvent, messages.length]);
+  }, [chatState, cities, categories, selectedCity, selectedCategory, selectedEvent]);
 
   // Helper to add bot message
   const addBotMessage = useCallback((content: string, type: ChatMessage['type'] = 'text', extras = {}) => {
@@ -326,6 +324,8 @@ export function useChat() {
     }
     
     try {
+      console.log('Saving user info to Supabase:', userInfo);
+      
       // Save user info to Supabase
       const userId = await saveUserInfo(userInfo);
       
@@ -333,9 +333,13 @@ export function useChat() {
         throw new Error('Failed to save user information');
       }
       
+      console.log('User saved with ID:', userId);
+      
       // Generate QR code
       const bookingId = `${selectedEvent.id}-${userId}-${Date.now()}`;
       const qrCodeUrl = await eventsService.generateQRCode(bookingId);
+      
+      console.log('Generated QR code:', qrCodeUrl);
       
       // Generate ticket image
       const ticketImg = await eventsService.generateTicketImage(
@@ -345,14 +349,18 @@ export function useChat() {
         qrCodeUrl
       );
       
+      console.log('Generated ticket image');
       setTicketImage(ticketImg);
       
       // Save booking to Supabase
+      console.log('Saving booking to Supabase');
       const savedBookingId = await saveBooking(selectedEvent.id, userId, ticketImg, qrCodeUrl);
       
       if (!savedBookingId) {
         throw new Error('Failed to save booking');
       }
+      
+      console.log('Booking saved with ID:', savedBookingId);
       
       // Get booking confirmation message
       const confirmationMessage = await geminiService.getBookingConfirmation(
