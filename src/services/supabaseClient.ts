@@ -4,8 +4,8 @@ import { UserInfo, Event, Ticket } from '@/lib/types';
 import { toast } from 'sonner';
 
 // In a production app, these would be environment variables
-const supabaseUrl = 'https://your-supabase-project.supabase.co';
-const supabaseKey = 'your-supabase-anon-key';
+const supabaseUrl = 'https://ctgcaaybpsultttvuvqe.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0Z2NhYXlicHN1bHR0dHZ1dnFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyNDAxNzUsImV4cCI6MjA1NjgxNjE3NX0.930-iapP70dSrp_3TaO9iOC-LkmjZhy7o-EN0yO1zxg';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -70,12 +70,13 @@ export const getTicketDetails = async (ticketId: string) => {
 
     if (error) throw error;
     
+    // The join query returns nested objects, we need to access their properties correctly
     return {
       ticketId: data.id,
-      eventId: data.events?.id,
-      eventName: data.events?.name,
-      userName: data.users?.name,
-      userEmail: data.users?.email,
+      eventId: data.events?.[0]?.id,
+      eventName: data.events?.[0]?.name,
+      userName: data.users?.[0]?.name,
+      userEmail: data.users?.[0]?.email,
       bookingDate: data.booking_date,
       ticketImage: data.ticket_image,
       qrCode: data.qr_code,
