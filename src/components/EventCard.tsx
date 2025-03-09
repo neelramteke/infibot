@@ -33,9 +33,14 @@ const EventCard: React.FC<EventCardProps> = ({
     >
       <div className={`overflow-hidden ${compact ? 'w-16 h-16' : 'h-40'}`}>
         <img 
-          src={event.image || "/placeholder.svg"} 
+          src={event.image || "https://source.unsplash.com/random/300x200?event"} 
           alt={event.name}
           className="object-cover w-full h-full transition-transform duration-500 hover:scale-110"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.onerror = null;
+            target.src = '/placeholder.svg';
+          }}
         />
       </div>
       

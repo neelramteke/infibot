@@ -6,12 +6,14 @@ export interface ChatMessage {
   role: MessageRole;
   content: string;
   timestamp: Date;
-  type?: 'text' | 'citySelection' | 'categorySelection' | 'eventSelection' | 'eventInfo' | 'userForm' | 'ticket';
+  type?: 'text' | 'citySelection' | 'categorySelection' | 'eventSelection' | 'eventInfo' | 'ticketQuantity' | 'userForm' | 'ticket';
   options?: string[];
   events?: Event[];
   selectedEvent?: Event;
   ticketImage?: string;
   ticketPdfUrl?: string;
+  ticketQuantity?: number;
+  totalAmount?: string;
 }
 
 export interface Event {
@@ -55,6 +57,8 @@ export interface Ticket {
   qrCode: string;
   ticketImage?: string;
   ticketPdfUrl?: string;
+  quantity: number;
+  totalAmount: string;
 }
 
 export interface BookingDetails {
@@ -65,4 +69,6 @@ export interface BookingDetails {
   bookingDate: string;
   ticketId: string;
   qrCode: string;
+  quantity: number;
+  totalAmount: string;
 }

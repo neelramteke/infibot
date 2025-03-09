@@ -100,7 +100,9 @@ export const generateTicketPDF = async (
   eventName: string,
   userName: string,
   eventDate: string,
-  qrCodeDataURL: string
+  qrCodeDataURL: string,
+  quantity: number = 1,
+  totalAmount: string = '₹0'
 ): Promise<string> => {
   try {
     // Create a new PDF document
@@ -139,17 +141,21 @@ export const generateTicketPDF = async (
     // Add event date
     doc.text(`Date: ${eventDate}`, doc.internal.pageSize.getWidth() / 2, 60, { align: 'center' });
     
+    // Add ticket quantity and total amount
+    doc.text(`Ticket Quantity: ${quantity}`, doc.internal.pageSize.getWidth() / 2, 70, { align: 'center' });
+    doc.text(`Total Amount: ${totalAmount}`, doc.internal.pageSize.getWidth() / 2, 80, { align: 'center' });
+    
     // Add QR code
     doc.addImage(qrCodeDataURL, 'PNG', 
-      doc.internal.pageSize.getWidth() / 2 - 25, 70, 
+      doc.internal.pageSize.getWidth() / 2 - 25, 90, 
       50, 50);
     
     // Add footer text
     doc.setFontSize(10);
     doc.text('Please present this ticket at the venue entrance', 
-      doc.internal.pageSize.getWidth() / 2, 130, { align: 'center' });
+      doc.internal.pageSize.getWidth() / 2, 150, { align: 'center' });
     doc.text('Powered by InfiBot', 
-      doc.internal.pageSize.getWidth() / 2, 140, { align: 'center' });
+      doc.internal.pageSize.getWidth() / 2, 160, { align: 'center' });
     
     // Convert to data URL
     const pdfDataUrl = doc.output('datauristring');

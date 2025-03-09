@@ -17,7 +17,8 @@ const ChatInterface: React.FC = () => {
     selectCategory, 
     selectEvent, 
     bookEvent,
-    submitUserInfo
+    submitUserInfo,
+    selectTicketQuantity
   } = useChat();
 
   // Handle cursor gradient effect
@@ -91,6 +92,7 @@ const ChatInterface: React.FC = () => {
         onSelectEvent={selectEvent}
         onBookEvent={bookEvent}
         onSubmitUserInfo={submitUserInfo}
+        onSelectTicketQuantity={selectTicketQuantity}
         onScroll={handleScroll}
       />
 

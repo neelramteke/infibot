@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ChatMessage as MessageType } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion } from 'framer-motion';
@@ -7,6 +7,7 @@ import EventCard from './EventCard';
 import UserForm from './UserForm';
 import TicketModal from './TicketModal';
 import { cn } from '@/lib/utils';
+import { Plus, Minus } from 'lucide-react';
 
 interface ChatMessageProps {
   message: MessageType;
@@ -15,6 +16,7 @@ interface ChatMessageProps {
   onSelectEvent: (event: string) => void;
   onBookEvent: (eventId: string) => void;
   onSubmitUserInfo: (userInfo: any) => void;
+  onSelectTicketQuantity?: (eventId: string, quantity: number) => void;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -24,8 +26,20 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   onSelectEvent,
   onBookEvent,
   onSubmitUserInfo,
+  onSelectTicketQuantity,
 }) => {
   const isUser = message.role === 'user';
+  const [quantity, setQuantity] = useState(1);
+
+  const handleQuantityChange = (value: number) => {
+    const newQuantity = Math.max(1, Math.min(10, value));
+    setQuantity(newQuantity);
+  };
+
+  const calculateTotalAmount = (price: string, qty: number) => {
+    const priceValue = parseInt(price.replace(/[^\d]/g, ''));
+    return `₹${priceValue * qty}`;
+  };
 
   return (
     <motion.div
@@ -132,11 +146,62 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           </div>
         )}
 
+        {/* Ticket quantity selection */}
+        {message.type === 'ticketQuantity' && message.selectedEvent && (
+          <div className="space-y-4">
+            <div className="whitespace-pre-wrap">{message.content}</div>
+            <div className="mt-4 p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-border">
+              <h3 className="font-medium text-sm mb-3">{message.selectedEvent.name}</h3>
+              
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm">Ticket Price:</span>
+                <span className="font-medium">{message.selectedEvent.price}</span>
+              </div>
+              
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm">Quantity:</span>
+                <div className="flex items-center space-x-2">
+                  <button 
+                    onClick={() => handleQuantityChange(quantity - 1)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary hover:bg-secondary/80 transition-colors"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="w-8 text-center font-medium">{quantity}</span>
+                  <button 
+                    onClick={() => handleQuantityChange(quantity + 1)}
+                    className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary hover:bg-secondary/80 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between mb-4 border-t border-border pt-3">
+                <span className="font-medium">Total Amount:</span>
+                <span className="font-bold text-primary">{calculateTotalAmount(message.selectedEvent.price, quantity)}</span>
+              </div>
+              
+              <button 
+                onClick={() => onSelectTicketQuantity?.(message.selectedEvent?.id || '', quantity)}
+                className="w-full btn-gradient"
+              >
+                Continue to Booking
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* User form */}
         {message.type === 'userForm' && message.selectedEvent && (
           <div className="space-y-4">
             <div className="whitespace-pre-wrap">{message.content}</div>
-            <UserForm onSubmit={(userInfo) => onSubmitUserInfo(userInfo)} eventId={message.selectedEvent.id} />
+            <UserForm 
+              onSubmit={(userInfo) => onSubmitUserInfo(userInfo)} 
+              eventId={message.selectedEvent.id} 
+              quantity={message.ticketQuantity || 1}
+              totalAmount={message.totalAmount || message.selectedEvent.price}
+            />
           </div>
         )}
 

@@ -33,7 +33,14 @@ export const saveUserInfo = async (userInfo: UserInfo) => {
   }
 };
 
-export const saveBooking = async (eventId: string, userId: string, ticketImage: string, qrCode: string) => {
+export const saveBooking = async (
+  eventId: string, 
+  userId: string, 
+  ticketImage: string, 
+  qrCode: string, 
+  quantity: number = 1,
+  totalAmount: string = '₹0'
+) => {
   try {
     // Insert booking info into the bookings table
     const { data, error } = await supabase
@@ -43,7 +50,9 @@ export const saveBooking = async (eventId: string, userId: string, ticketImage: 
         user_id: userId,
         booking_date: new Date().toISOString(),
         ticket_image: ticketImage,
-        qr_code: qrCode
+        qr_code: qrCode,
+        quantity: quantity,
+        total_amount: totalAmount
       })
       .select('id')
       .single();
@@ -67,8 +76,10 @@ export const getTicketDetails = async (ticketId: string) => {
         booking_date,
         ticket_image,
         qr_code,
+        quantity,
+        total_amount,
         event_id,
-        users (
+        users!bookings_user_id_fkey (
           name,
           email
         )
@@ -78,16 +89,20 @@ export const getTicketDetails = async (ticketId: string) => {
 
     if (error) throw error;
     
-    // Correctly access the user data from the structure
+    // Extract user data from the nested structure
+    const userData = data.users || {};
+    
     return {
       ticketId: data.id,
       eventId: data.event_id,
       eventName: '', // We'll need to fetch this separately or update the query
-      userName: data.users?.[0]?.name, // Access name from the first user in the array
-      userEmail: data.users?.[0]?.email, // Access email from the first user in the array
+      userName: userData.name,
+      userEmail: userData.email,
       bookingDate: data.booking_date,
       ticketImage: data.ticket_image,
       qrCode: data.qr_code,
+      quantity: data.quantity || 1,
+      totalAmount: data.total_amount || '₹0'
     };
   } catch (error) {
     console.error('Error fetching ticket details:', error);

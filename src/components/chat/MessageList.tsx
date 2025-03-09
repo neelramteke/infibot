@@ -12,6 +12,7 @@ interface MessageListProps {
   onSelectEvent: (event: string) => void;
   onBookEvent: (eventId: string) => void;
   onSubmitUserInfo: (userInfo: any) => void;
+  onSelectTicketQuantity?: (eventId: string, quantity: number) => void;
   onScroll: (scrollPosition: { scrollTop: number; scrollHeight: number; clientHeight: number }) => void;
 }
 
@@ -23,6 +24,7 @@ const MessageList: React.FC<MessageListProps> = ({
   onSelectEvent,
   onBookEvent,
   onSubmitUserInfo,
+  onSelectTicketQuantity,
   onScroll,
 }) => {
   const messageEndRef = useRef<HTMLDivElement>(null);
@@ -61,6 +63,7 @@ const MessageList: React.FC<MessageListProps> = ({
           onSelectEvent={onSelectEvent}
           onBookEvent={onBookEvent}
           onSubmitUserInfo={onSubmitUserInfo}
+          onSelectTicketQuantity={onSelectTicketQuantity}
         />
       ))}
 
