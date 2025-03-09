@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { UserInfo, Event, Ticket } from '@/lib/types';
 import { toast } from 'sonner';
@@ -84,8 +83,8 @@ export const getTicketDetails = async (ticketId: string) => {
 
     if (error) throw error;
     
-    // Extract user data from the nested structure
-    const userData = data.users || {};
+    // Extract user data from the nested structure with proper type safety
+    const userData = data.users as { name?: string; email?: string } || {};
     
     return {
       ticketId: data.id,
