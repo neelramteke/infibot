@@ -78,12 +78,13 @@ export const getTicketDetails = async (ticketId: string) => {
 
     if (error) throw error;
     
+    // Correctly access the user data from the structure
     return {
       ticketId: data.id,
       eventId: data.event_id,
       eventName: '', // We'll need to fetch this separately or update the query
-      userName: data.users?.name,
-      userEmail: data.users?.email,
+      userName: data.users?.name, // Access name property from users object
+      userEmail: data.users?.email, // Access email property from users object
       bookingDate: data.booking_date,
       ticketImage: data.ticket_image,
       qrCode: data.qr_code,
