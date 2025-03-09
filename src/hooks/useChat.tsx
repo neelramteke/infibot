@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage, Event, UserInfo, City, EventCategory } from '@/lib/types';
@@ -15,18 +16,10 @@ export function useChat() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [ticketImage, setTicketImage] = useState<string>('');
+  const [ticketPdfUrl, setTicketPdfUrl] = useState<string>('');
   const [chatState, setChatState] = useState<
     'initial' | 'citySelection' | 'categorySelection' | 'eventSelection' | 'eventInfo' | 'userForm' | 'complete'
   >('initial');
-
-  // Helper function to get appropriate greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
-  };
 
   // Initialize chat waiting for user message
   useEffect(() => {
@@ -38,9 +31,9 @@ export function useChat() {
         const categoriesData = await eventsService.getEventCategories();
         setCategories(categoriesData);
         
-        // Start with a greeting message
-        const greeting = `Hey! ${getGreeting()}! Welcome to InfiBot. I'm your event booking assistant.`;
-        addBotMessage(greeting, 'text');
+        // Start with a guidance message
+        const welcomeMessage = await geminiService.getWelcomeMessage();
+        addBotMessage(welcomeMessage, 'text');
         
         // After greeting, show city selection
         addBotMessage(
@@ -52,7 +45,7 @@ export function useChat() {
         setChatState('citySelection');
       } catch (error) {
         console.error('Error loading initial data:', error);
-        toast.error('Failed to load initial data. Please refresh the page.');
+        toast.error('Unable to load cities. Please refresh the page.');
       }
     };
     
@@ -91,7 +84,10 @@ export function useChat() {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Failed to process your message. Please try again.');
+      addBotMessage(
+        "I'm having trouble processing your request. Please try selecting one of the options above.",
+        'text'
+      );
     } finally {
       setLoading(false);
     }
@@ -271,18 +267,18 @@ export function useChat() {
       const bookingId = `${selectedEvent.id}-${userId}-${Date.now()}`;
       const qrCodeUrl = await eventsService.generateQRCode(bookingId);
       
-      // Generate ticket image
-      const ticketImg = await eventsService.generateTicketImage(
+      // Generate ticket PDF
+      const ticketPdf = await eventsService.generateTicketPDF(
         selectedEvent.name,
         userInfo.name,
         selectedEvent.date,
         qrCodeUrl
       );
       
-      setTicketImage(ticketImg);
+      setTicketPdfUrl(ticketPdf);
       
       // Save booking to Supabase
-      const savedBookingId = await saveBooking(selectedEvent.id, userId, ticketImg, qrCodeUrl);
+      const savedBookingId = await saveBooking(selectedEvent.id, userId, ticketPdf, qrCodeUrl);
       
       if (!savedBookingId) {
         throw new Error('Failed to save booking');
@@ -298,13 +294,13 @@ export function useChat() {
       addBotMessage(
         confirmationMessage,
         'ticket',
-        { ticketImage: ticketImg }
+        { ticketPdfUrl: ticketPdf }
       );
       
       // Add thank you message
       setTimeout(() => {
         addBotMessage(
-          `Thank you for booking with InfiBot! We hope you enjoy your event. Please visit us again soon for more exciting events!`,
+          `Thank you for booking with InfiBot! We hope you enjoy your event. Your e-ticket is ready for download or sharing.`,
           'text'
         );
       }, 1000);
@@ -312,7 +308,10 @@ export function useChat() {
       setChatState('complete');
     } catch (error) {
       console.error('Error processing booking:', error);
-      toast.error('Failed to process your booking. Please try again.');
+      addBotMessage(
+        "I encountered an issue while processing your booking. Please check your information and try again.",
+        'text'
+      );
     }
   }, [selectedEvent, addBotMessage]);
 
@@ -339,22 +338,22 @@ export function useChat() {
       const bookingId = `${selectedEvent.id}-${userId}-${Date.now()}`;
       const qrCodeUrl = await eventsService.generateQRCode(bookingId);
       
-      console.log('Generated QR code:', qrCodeUrl);
+      console.log('Generated QR code');
       
-      // Generate ticket image
-      const ticketImg = await eventsService.generateTicketImage(
+      // Generate ticket PDF
+      const ticketPdf = await eventsService.generateTicketPDF(
         selectedEvent.name,
         userInfo.name,
         selectedEvent.date,
         qrCodeUrl
       );
       
-      console.log('Generated ticket image');
-      setTicketImage(ticketImg);
+      console.log('Generated ticket PDF');
+      setTicketPdfUrl(ticketPdf);
       
       // Save booking to Supabase
       console.log('Saving booking to Supabase');
-      const savedBookingId = await saveBooking(selectedEvent.id, userId, ticketImg, qrCodeUrl);
+      const savedBookingId = await saveBooking(selectedEvent.id, userId, ticketPdf, qrCodeUrl);
       
       if (!savedBookingId) {
         throw new Error('Failed to save booking');
@@ -372,13 +371,13 @@ export function useChat() {
       addBotMessage(
         confirmationMessage,
         'ticket',
-        { ticketImage: ticketImg }
+        { ticketPdfUrl: ticketPdf }
       );
       
       // Add thank you message
       setTimeout(() => {
         addBotMessage(
-          `Thank you for booking with InfiBot! We hope you enjoy your event. Please visit us again soon for more exciting events!`,
+          `Thank you for booking with InfiBot! Your e-ticket has been generated successfully. You can download it or share it directly.`,
           'text'
         );
       }, 1000);
@@ -386,7 +385,10 @@ export function useChat() {
       setChatState('complete');
     } catch (error) {
       console.error('Error processing booking:', error);
-      toast.error('Failed to process your booking. Please try again.');
+      addBotMessage(
+        "I'm sorry, but there was an issue processing your booking. Please try again or contact support if the problem persists.",
+        'text'
+      );
     }
   }, [selectedEvent, addBotMessage]);
 

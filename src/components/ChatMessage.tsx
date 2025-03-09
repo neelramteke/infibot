@@ -141,10 +141,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         )}
 
         {/* Ticket */}
-        {message.type === 'ticket' && message.ticketImage && (
+        {message.type === 'ticket' && message.ticketPdfUrl && (
           <div className="space-y-4">
             <div className="whitespace-pre-wrap">{message.content}</div>
-            <TicketModal ticketImage={message.ticketImage} />
+            <TicketModal ticketPdfUrl={message.ticketPdfUrl} />
           </div>
         )}
       </div>

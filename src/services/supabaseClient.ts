@@ -83,8 +83,8 @@ export const getTicketDetails = async (ticketId: string) => {
       ticketId: data.id,
       eventId: data.event_id,
       eventName: '', // We'll need to fetch this separately or update the query
-      userName: data.users?.name, // Access name property from users object
-      userEmail: data.users?.email, // Access email property from users object
+      userName: data.users?.[0]?.name, // Access name from the first user in the array
+      userEmail: data.users?.[0]?.email, // Access email from the first user in the array
       bookingDate: data.booking_date,
       ticketImage: data.ticket_image,
       qrCode: data.qr_code,

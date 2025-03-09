@@ -57,6 +57,28 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    overflow-x: hidden;
+  }
+  
+  /* Cursor gradient effect */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(94, 53, 177, 0.15) 0%, rgba(124, 93, 250, 0.05) 40%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  body.cursor-effect-active::before {
+    opacity: 1;
   }
 }
 
@@ -99,5 +121,30 @@
 
   .btn-gradient-secondary {
     @apply px-3 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-md transition-all shadow-sm hover:shadow-md;
+  }
+}
+
+/* Media queries for responsive design */
+@media screen and (max-width: 768px) {
+  .container {
+    @apply px-4;
+  }
+  
+  .chat-bubble-bot, .chat-bubble-user {
+    @apply max-w-[90%];
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .glass-panel {
+    @apply rounded-lg;
+  }
+  
+  .chat-bubble-bot, .chat-bubble-user {
+    @apply p-2 text-sm;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-ghost, .btn-gradient, .btn-gradient-secondary {
+    @apply px-3 py-1.5 text-sm;
   }
 }

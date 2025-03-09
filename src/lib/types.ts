@@ -11,6 +11,7 @@ export interface ChatMessage {
   events?: Event[];
   selectedEvent?: Event;
   ticketImage?: string;
+  ticketPdfUrl?: string;
 }
 
 export interface Event {
@@ -52,7 +53,8 @@ export interface Ticket {
   userId: string;
   bookingDate: Date;
   qrCode: string;
-  ticketImage: string;
+  ticketImage?: string;
+  ticketPdfUrl?: string;
 }
 
 export interface BookingDetails {
