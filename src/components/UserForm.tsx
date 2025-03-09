@@ -1,109 +1,111 @@
 
 import React, { useState } from 'react';
-import { toast } from 'sonner';
+import { Button } from './ui/button';
 import { UserInfo } from '@/lib/types';
 
-interface UserFormProps {
+export interface UserFormProps {
   onSubmit: (userInfo: UserInfo) => void;
   eventId: string;
+  quantity?: number;
+  totalAmount?: string;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ onSubmit, eventId }) => {
-  const [userInfo, setUserInfo] = useState<UserInfo>({
+const UserForm: React.FC<UserFormProps> = ({ onSubmit, eventId, quantity = 1, totalAmount = '₹0' }) => {
+  const [formData, setFormData] = useState<UserInfo>({
     name: '',
-    age: 0,
-    gender: '',
+    age: 18,
+    gender: 'Male',
     phone: '',
     email: '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+    
+    if (formData.age < 5 || formData.age > 120) {
+      newErrors.age = 'Age must be between 5 and 120';
+    }
+    
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number must be 10 digits';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Invalid email address';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setUserInfo(prev => ({
+    const { name, value, type } = e.target as HTMLInputElement;
+    
+    setFormData(prev => ({
       ...prev,
-      [name]: name === 'age' ? (value ? parseInt(value) : 0) : value,
+      [name]: type === 'number' ? parseInt(value) : value,
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple validation
-    if (!userInfo.name || !userInfo.age || !userInfo.gender || !userInfo.phone || !userInfo.email) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-    
-    if (userInfo.age < 5 || userInfo.age > 120) {
-      toast.error('Please enter a valid age');
-      return;
-    }
-    
-    if (!/^[0-9]{10}$/.test(userInfo.phone)) {
-      toast.error('Please enter a valid 10-digit phone number');
-      return;
-    }
-    
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userInfo.email)) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-    
-    try {
-      setIsSubmitting(true);
-      console.log('Submitting user info:', userInfo);
-      // Pass the data to parent component for processing
-      onSubmit(userInfo);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast.error('Error submitting form. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+    if (validateForm()) {
+      onSubmit(formData);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 mt-2">
-      <div>
+    <form onSubmit={handleSubmit} className="bg-white/50 dark:bg-slate-800/50 rounded-xl border border-border p-4">
+      <div className="mb-4">
+        <label htmlFor="name" className="block text-sm font-medium mb-1">Full Name</label>
         <input
           type="text"
+          id="name"
           name="name"
-          value={userInfo.name}
+          value={formData.name}
           onChange={handleChange}
-          placeholder="Full Name"
-          className="input-primary text-sm"
-          required
-          disabled={isSubmitting}
+          className="input-primary"
+          placeholder="John Doe"
         />
+        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
       </div>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
+          <label htmlFor="age" className="block text-sm font-medium mb-1">Age</label>
           <input
             type="number"
+            id="age"
             name="age"
-            value={userInfo.age || ''}
+            value={formData.age}
             onChange={handleChange}
-            placeholder="Age"
+            className="input-primary"
             min="5"
             max="120"
-            className="input-primary text-sm"
-            required
-            disabled={isSubmitting}
           />
+          {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age}</p>}
         </div>
         
         <div>
+          <label htmlFor="gender" className="block text-sm font-medium mb-1">Gender</label>
           <select
+            id="gender"
             name="gender"
-            value={userInfo.gender}
+            value={formData.gender}
             onChange={handleChange}
-            className="input-primary text-sm"
-            required
-            disabled={isSubmitting}
+            className="input-primary"
           >
-            <option value="" disabled>Select Gender</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
@@ -112,42 +114,48 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, eventId }) => {
         </div>
       </div>
       
-      <div>
+      <div className="mb-4">
+        <label htmlFor="phone" className="block text-sm font-medium mb-1">Phone Number</label>
         <input
           type="tel"
+          id="phone"
           name="phone"
-          value={userInfo.phone}
+          value={formData.phone}
           onChange={handleChange}
-          placeholder="Phone Number (10 digits)"
-          pattern="[0-9]{10}"
-          className="input-primary text-sm"
-          required
-          disabled={isSubmitting}
+          className="input-primary"
+          placeholder="1234567890"
         />
+        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
       </div>
       
-      <div>
+      <div className="mb-4">
+        <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
         <input
           type="email"
+          id="email"
           name="email"
-          value={userInfo.email}
+          value={formData.email}
           onChange={handleChange}
-          placeholder="Email Address"
-          className="input-primary text-sm"
-          required
-          disabled={isSubmitting}
+          className="input-primary"
+          placeholder="john@example.com"
         />
+        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
       </div>
       
-      <input type="hidden" name="eventId" value={eventId} />
+      <div className="border-t border-border pt-4 mb-4">
+        <div className="flex justify-between mb-2">
+          <span className="text-sm">Ticket Quantity:</span>
+          <span className="font-semibold">{quantity}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-sm">Total Amount:</span>
+          <span className="font-bold text-primary">{totalAmount}</span>
+        </div>
+      </div>
       
-      <button
-        type="submit"
-        className="btn-gradient w-full text-sm"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? 'Processing...' : 'Submit Booking'}
-      </button>
+      <Button type="submit" className="w-full btn-gradient">
+        Complete Booking
+      </Button>
     </form>
   );
 };

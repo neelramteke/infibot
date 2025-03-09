@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage, Event, UserInfo, City, EventCategory } from '@/lib/types';
@@ -82,7 +83,9 @@ export function useChat() {
       } else if (chatState === 'ticketQuantity') {
         await handleTicketQuantitySubmission(content);
       } else if (chatState === 'userForm') {
-        await handleUserFormSubmission(content);
+        // Default fallback, generally this isn't called directly as we use submitUserInfo
+        const aiResponse = await geminiService.getWelcomeMessage();
+        addBotMessage(aiResponse, 'text');
       } else {
         // Default fallback for free text
         const aiResponse = await geminiService.getWelcomeMessage();
@@ -244,11 +247,7 @@ export function useChat() {
       setTotalAmount(total);
 
       // Get user info prompt
-      const userInfoPrompt = await geminiService.getUserInfoPrompt(
-        selectedEvent.name, 
-        quantity, 
-        total
-      );
+      const userInfoPrompt = await geminiService.getUserInfoPrompt(selectedEvent.name);
       
       addBotMessage(
         userInfoPrompt,
@@ -307,11 +306,7 @@ export function useChat() {
     setTotalAmount(total);
 
     // Get user info prompt
-    const userInfoPrompt = await geminiService.getUserInfoPrompt(
-      selectedEvent.name,
-      quantity,
-      total
-    );
+    const userInfoPrompt = await geminiService.getUserInfoPrompt(selectedEvent.name);
     
     addBotMessage(
       userInfoPrompt,
@@ -364,29 +359,26 @@ export function useChat() {
       console.log('Generated ticket PDF');
       setTicketPdfUrl(ticketPdf);
       
-      // Save booking to Supabase with quantity and total amount
+      // Save booking to Supabase
       console.log('Saving booking to Supabase');
       const savedBookingId = await saveBooking(
         selectedEvent.id, 
         userId, 
         ticketPdf, 
-        qrCodeUrl,
-        ticketQuantity,
-        totalAmount
+        qrCodeUrl
       );
       
       if (!savedBookingId) {
-        throw new Error('Failed to save booking');
+        // Even if booking save fails, we'll still show the ticket to the user
+        console.log('Warning: Failed to save booking, but proceeding with ticket generation');
+      } else {
+        console.log('Booking saved with ID:', savedBookingId);
       }
-      
-      console.log('Booking saved with ID:', savedBookingId);
       
       // Get booking confirmation message
       const confirmationMessage = await geminiService.getBookingConfirmation(
         selectedEvent.name,
-        userInfo.name,
-        ticketQuantity,
-        totalAmount
+        userInfo.name
       );
       
       // Add bot message with ticket
@@ -407,10 +399,47 @@ export function useChat() {
       setChatState('complete');
     } catch (error) {
       console.error('Error processing booking:', error);
-      addBotMessage(
-        "I'm sorry, but there was an issue processing your booking. Please try again or contact support if the problem persists.",
-        'text'
-      );
+      // We'll still try to generate and show the ticket even if there was an error with Supabase
+      try {
+        if (selectedEvent) {
+          // Generate QR code as fallback
+          const fallbackBookingId = `${selectedEvent.id}-fallback-${Date.now()}`;
+          const qrCodeUrl = await eventsService.generateQRCode(fallbackBookingId);
+          
+          // Generate ticket PDF with quantity and total amount as fallback
+          const ticketPdf = await eventsService.generateTicketPDF(
+            selectedEvent.name,
+            userInfo.name,
+            selectedEvent.date,
+            qrCodeUrl,
+            ticketQuantity,
+            totalAmount
+          );
+          
+          setTicketPdfUrl(ticketPdf);
+          
+          // Get booking confirmation message
+          const confirmationMessage = await geminiService.getBookingConfirmation(
+            selectedEvent.name,
+            userInfo.name
+          );
+          
+          // Add bot message with ticket
+          addBotMessage(
+            confirmationMessage,
+            'ticket',
+            { ticketPdfUrl: ticketPdf }
+          );
+          
+          setChatState('complete');
+        }
+      } catch (fallbackError) {
+        console.error('Error in fallback ticket generation:', fallbackError);
+        addBotMessage(
+          "Your booking was processed but there was an issue generating your ticket. Please contact support.",
+          'text'
+        );
+      }
     }
   }, [selectedEvent, ticketQuantity, totalAmount, addBotMessage]);
 

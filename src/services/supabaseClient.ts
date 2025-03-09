@@ -37,12 +37,11 @@ export const saveBooking = async (
   eventId: string, 
   userId: string, 
   ticketImage: string, 
-  qrCode: string, 
-  quantity: number = 1,
-  totalAmount: string = '₹0'
+  qrCode: string
 ) => {
   try {
-    // Insert booking info into the bookings table
+    // Insert booking info into the bookings table without quantity and total_amount
+    // since these columns don't exist in the database yet
     const { data, error } = await supabase
       .from('bookings')
       .insert({
@@ -50,9 +49,7 @@ export const saveBooking = async (
         user_id: userId,
         booking_date: new Date().toISOString(),
         ticket_image: ticketImage,
-        qr_code: qrCode,
-        quantity: quantity,
-        total_amount: totalAmount
+        qr_code: qrCode
       })
       .select('id')
       .single();
@@ -76,8 +73,6 @@ export const getTicketDetails = async (ticketId: string) => {
         booking_date,
         ticket_image,
         qr_code,
-        quantity,
-        total_amount,
         event_id,
         users!bookings_user_id_fkey (
           name,
@@ -96,13 +91,13 @@ export const getTicketDetails = async (ticketId: string) => {
       ticketId: data.id,
       eventId: data.event_id,
       eventName: '', // We'll need to fetch this separately or update the query
-      userName: userData.name,
-      userEmail: userData.email,
+      userName: userData.name || '',
+      userEmail: userData.email || '',
       bookingDate: data.booking_date,
       ticketImage: data.ticket_image,
       qrCode: data.qr_code,
-      quantity: data.quantity || 1,
-      totalAmount: data.total_amount || '₹0'
+      quantity: 1, // Default since we don't have this column yet
+      totalAmount: '₹0' // Default since we don't have this column yet
     };
   } catch (error) {
     console.error('Error fetching ticket details:', error);
