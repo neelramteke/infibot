@@ -185,6 +185,8 @@
   }
   
   main.flex-col.lg\:flex-row {
-    @apply flex-col gap-6 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
   }
 }
