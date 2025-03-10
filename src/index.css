@@ -60,51 +60,6 @@
     overflow-x: hidden;
     position: relative;
   }
-  
-  /* Cursor gradient effect */
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(
-      circle,
-      rgba(94, 53, 177, 0.15) 0%,
-      rgba(124, 93, 250, 0.08) 35%,
-      rgba(124, 93, 250, 0.03) 60%,
-      transparent 80%
-    );
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    transform: translate(calc(var(--x, 0) - 200px), calc(var(--y, 0) - 200px));
-    opacity: 0;
-    transition: opacity 0.2s ease-out;
-    will-change: transform, opacity;
-  }
-
-  body.cursor-effect-active::before {
-    opacity: 1;
-  }
-  
-  /* Responsive cursor effect */
-  @media (max-width: 768px) {
-    body::before {
-      width: 250px;
-      height: 250px;
-      transform: translate(calc(var(--x, 0) - 125px), calc(var(--y, 0) - 125px));
-    }
-  }
-  
-  @media (max-width: 480px) {
-    body::before {
-      width: 180px;
-      height: 180px;
-      transform: translate(calc(var(--x, 0) - 90px), calc(var(--y, 0) - 90px));
-    }
-  }
 }
 
 @layer components {

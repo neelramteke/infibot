@@ -76,7 +76,6 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, eventId, quantity = 1, to
           value={formData.name}
           onChange={handleChange}
           className="input-primary"
-          placeholder="John Doe"
         />
         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
       </div>
@@ -123,7 +122,6 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, eventId, quantity = 1, to
           value={formData.phone}
           onChange={handleChange}
           className="input-primary"
-          placeholder="1234567890"
         />
         {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
       </div>
@@ -137,7 +135,6 @@ const UserForm: React.FC<UserFormProps> = ({ onSubmit, eventId, quantity = 1, to
           value={formData.email}
           onChange={handleChange}
           className="input-primary"
-          placeholder="john@example.com"
         />
         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
       </div>

@@ -5,11 +5,15 @@ import { Infinity } from 'lucide-react';
 import ChatInterface from '@/components/ChatInterface';
 import ThemeToggle from '@/components/ThemeToggle';
 import { ThemeProvider } from '@/hooks/useTheme';
+import { BeamsBackground } from '@/components/ui/beams-background';
 
 const Index = () => {
   return (
     <ThemeProvider>
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-indigo-950">
+      <div className="min-h-screen flex flex-col">
+        {/* Beams Background */}
+        <BeamsBackground intensity="medium" />
+        
         {/* Header */}
         <header className="fixed w-full top-0 z-10 backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border-b border-border/40 py-4 px-8">
           <div className="container mx-auto flex justify-between items-center">
@@ -32,7 +36,7 @@ const Index = () => {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 mt-24">
+        <main className="flex-1 container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 mt-24 relative z-10">
           {/* Left column - Information */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
@@ -97,7 +101,7 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-border shadow-sm">
+            <div className="bg-white/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-border shadow-sm">
               <h3 className="text-lg font-semibold mb-3">Why Use InfiBot?</h3>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
@@ -132,7 +136,7 @@ const Index = () => {
         </main>
         
         {/* Footer */}
-        <footer className="py-6 px-8 border-t border-border/40 bg-white/60 dark:bg-black/40 backdrop-blur-sm">
+        <footer className="py-6 px-8 border-t border-border/40 bg-white/30 dark:bg-black/20 backdrop-blur-sm relative z-10">
           <div className="container mx-auto text-center text-sm text-muted-foreground">
             <p>© {new Date().getFullYear()} InfiBot. All rights reserved.</p>
           </div>
