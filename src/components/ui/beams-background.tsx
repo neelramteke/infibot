@@ -170,7 +170,7 @@ export function BeamsBackground({
     return (
         <div
             className={cn(
-                "fixed inset-0 min-h-screen w-full overflow-hidden bg-neutral-950 -z-10",
+                "relative min-h-screen w-full overflow-hidden bg-neutral-950",
                 className
             )}
         >

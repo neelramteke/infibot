@@ -11,7 +11,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 243 75% 59%;
+    --primary: 263.4 70% 50.4%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -23,7 +23,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 243 75% 59%;
+    --ring: 263.4 70% 50.4%;
     --radius: 0.5rem;
   }
 
@@ -34,7 +34,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 243 75% 59%;
+    --primary: 263.4 70% 50.4%;
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -46,7 +46,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 243 75% 59%;
+    --ring: 263.4 70% 50.4%;
   }
 }
 
@@ -57,91 +57,31 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    overflow-x: hidden;
-    position: relative;
   }
 }
 
 @layer components {
-  .input-primary {
-    @apply block w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
-  .navbar-glass {
-    @apply backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border-b border-border/40;
-  }
-
   .glass-panel {
-    @apply backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border border-border/40;
+    @apply bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-border/50 shadow-lg;
   }
-
-  .chat-bubble-bot {
-    @apply bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-tl-sm shadow-sm;
-  }
-
-  .chat-bubble-user {
-    @apply bg-primary p-3 text-primary-foreground rounded-2xl rounded-tr-sm;
-  }
-
-  .btn-primary {
-    @apply px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors;
-  }
-
-  .btn-secondary {
-    @apply px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors;
-  }
-
-  .btn-ghost {
-    @apply px-4 py-2 text-foreground hover:bg-secondary/50 rounded-md transition-colors;
-  }
-
+  
   .btn-gradient {
-    @apply px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white rounded-md transition-all shadow-md hover:shadow-lg;
+    @apply bg-gradient-to-r from-primary to-indigo-500 hover:from-indigo-600 hover:to-primary text-white font-medium py-2 px-4 rounded-md transition-all shadow-sm;
   }
-
+  
   .btn-gradient-secondary {
-    @apply px-3 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-md transition-all shadow-sm hover:shadow-md;
+    @apply bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 dark:from-slate-800 dark:to-slate-700 dark:hover:from-slate-700 dark:hover:to-slate-600 text-slate-700 dark:text-slate-200 py-1.5 px-3 rounded-md transition-all shadow-sm;
   }
-}
+  
+  .chat-bubble-user {
+    @apply bg-gradient-to-r from-primary/90 to-indigo-500/90 text-white rounded-2xl rounded-tr-none p-3 shadow-md self-end;
+  }
+  
+  .chat-bubble-bot {
+    @apply bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm text-slate-800 dark:text-slate-100 rounded-2xl rounded-tl-none p-3 shadow-sm;
+  }
 
-/* Media queries for responsive design */
-@media screen and (max-width: 768px) {
-  .container {
-    @apply px-4;
-  }
-  
-  .chat-bubble-bot, .chat-bubble-user {
-    @apply max-w-[90%];
-  }
-  
-  .glass-panel {
-    @apply h-[500px] !important;
-  }
-}
-
-@media screen and (max-width: 640px) {
-  .glass-panel {
-    @apply rounded-lg h-[450px] !important;
-  }
-  
-  .chat-bubble-bot, .chat-bubble-user {
-    @apply p-2 text-sm;
-  }
-  
-  .btn-primary, .btn-secondary, .btn-ghost, .btn-gradient, .btn-gradient-secondary {
-    @apply px-3 py-1.5 text-sm;
-  }
-}
-
-/* Mobile responsive design for index page */
-@media screen and (max-width: 1024px) {
-  .lg\:w-1\/3, .lg\:w-2\/3 {
-    width: 100% !important;
-  }
-  
-  main.flex-col.lg\:flex-row {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 1.5rem !important;
+  .input-primary {
+    @apply w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white/80 dark:bg-slate-700/80 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
   }
 }

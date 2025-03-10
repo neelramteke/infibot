@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatMessage, Event, UserInfo, City, EventCategory } from '@/lib/types';
@@ -23,7 +22,6 @@ export function useChat() {
     'initial' | 'citySelection' | 'categorySelection' | 'eventSelection' | 'eventInfo' | 'ticketQuantity' | 'userForm' | 'complete'
   >('initial');
 
-  // Initialize chat waiting for user message
   useEffect(() => {
     const initChat = async () => {
       try {
@@ -33,11 +31,9 @@ export function useChat() {
         const categoriesData = await eventsService.getEventCategories();
         setCategories(categoriesData);
         
-        // Start with a guidance message
         const welcomeMessage = await geminiService.getWelcomeMessage();
         addBotMessage(welcomeMessage, 'text');
         
-        // After greeting, show city selection
         addBotMessage(
           'Please select a city where you want to explore events:',
           'citySelection',
@@ -54,11 +50,9 @@ export function useChat() {
     initChat();
   }, []);
 
-  // Send message from user
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
     
-    // Add user message to the chat
     const userMessageId = uuidv4();
     const userMessage: ChatMessage = {
       id: userMessageId,
@@ -78,16 +72,13 @@ export function useChat() {
       } else if (chatState === 'eventSelection') {
         await handleEventSelection(content);
       } else if (chatState === 'eventInfo') {
-        // This is handled by bookEvent now
         await handleEventInfoSubmission(content);
       } else if (chatState === 'ticketQuantity') {
         await handleTicketQuantitySubmission(content);
       } else if (chatState === 'userForm') {
-        // Default fallback, generally this isn't called directly as we use submitUserInfo
         const aiResponse = await geminiService.getWelcomeMessage();
         addBotMessage(aiResponse, 'text');
       } else {
-        // Default fallback for free text
         const aiResponse = await geminiService.getWelcomeMessage();
         addBotMessage(aiResponse, 'text');
       }
@@ -102,7 +93,6 @@ export function useChat() {
     }
   }, [chatState, cities, categories, selectedCity, selectedCategory, selectedEvent, ticketQuantity]);
 
-  // Helper to add bot message
   const addBotMessage = useCallback((content: string, type: ChatMessage['type'] = 'text', extras = {}) => {
     const botMessage: ChatMessage = {
       id: uuidv4(),
@@ -116,14 +106,12 @@ export function useChat() {
     setMessages(prev => [...prev, botMessage]);
   }, []);
 
-  // Handle city selection
   const handleCitySelection = useCallback(async (cityName: string) => {
     const matchedCity = cities.find(
       city => city.name.toLowerCase() === cityName.toLowerCase()
     );
     
     if (!matchedCity) {
-      // City not found, ask again
       addBotMessage(
         `I couldn't find ${cityName} in our list. Please select one of these cities:`,
         'citySelection',
@@ -134,10 +122,8 @@ export function useChat() {
     
     setSelectedCity(matchedCity.name);
     
-    // Get response from AI
     const response = await geminiService.getCitySelectionResponse(matchedCity.name);
     
-    // Add bot message with category selection
     addBotMessage(
       response,
       'categorySelection',
@@ -147,14 +133,12 @@ export function useChat() {
     setChatState('categorySelection');
   }, [cities, categories, addBotMessage]);
 
-  // Handle category selection
   const handleCategorySelection = useCallback(async (categoryName: string) => {
     const matchedCategory = categories.find(
       category => category.name.toLowerCase() === categoryName.toLowerCase()
     );
     
     if (!matchedCategory) {
-      // Category not found, ask again
       addBotMessage(
         `I couldn't find ${categoryName} in our list. Please select one of these categories:`,
         'categorySelection',
@@ -165,14 +149,11 @@ export function useChat() {
     
     setSelectedCategory(matchedCategory.name);
     
-    // Get events for the selected city and category
     const eventsData = await eventsService.getEventsByCityAndCategory(selectedCity, matchedCategory.name);
     setEvents(eventsData);
     
-    // Get response from AI
     const response = await geminiService.getCategorySelectionResponse(selectedCity, matchedCategory.name);
     
-    // Add bot message with event selection
     addBotMessage(
       response,
       'eventSelection',
@@ -182,7 +163,6 @@ export function useChat() {
     setChatState('eventSelection');
   }, [selectedCity, categories, addBotMessage]);
 
-  // Handle event selection
   const handleEventSelection = useCallback(async (eventName: string) => {
     const matchedEvent = events.find(
       event => event.name.toLowerCase() === eventName.toLowerCase() || 
@@ -190,7 +170,6 @@ export function useChat() {
     );
     
     if (!matchedEvent) {
-      // Event not found, ask again
       addBotMessage(
         `I couldn't find "${eventName}" in our list. Please select one of these events:`,
         'eventSelection',
@@ -201,10 +180,8 @@ export function useChat() {
     
     setSelectedEvent(matchedEvent);
     
-    // Get response from AI
     const response = await geminiService.getEventSelectionResponse(matchedEvent.name);
     
-    // Add bot message with event info
     addBotMessage(
       response,
       'eventInfo',
@@ -214,12 +191,9 @@ export function useChat() {
     setChatState('eventInfo');
   }, [events, addBotMessage]);
 
-  // Handle event info submission (placeholder to maintain function signature)
   const handleEventInfoSubmission = useCallback(async (content: string) => {
-    // This is now handled through the bookEvent function
   }, [selectedEvent]);
 
-  // Handle ticket quantity submission
   const handleTicketQuantitySubmission = useCallback(async (content: string) => {
     if (!selectedEvent) {
       toast.error('No event selected. Please start over.');
@@ -227,7 +201,6 @@ export function useChat() {
     }
 
     try {
-      // Parse quantity from the message
       const quantityMatch = content.match(/(\d+)\s*ticket/i);
       const quantity = quantityMatch ? parseInt(quantityMatch[1]) : ticketQuantity;
 
@@ -239,14 +212,12 @@ export function useChat() {
         return;
       }
 
-      // Calculate total amount
       const priceValue = parseInt(selectedEvent.price.replace(/[^\d]/g, ''));
       const total = `₹${priceValue * quantity}`;
       
       setTicketQuantity(quantity);
       setTotalAmount(total);
 
-      // Get user info prompt
       const userInfoPrompt = await geminiService.getUserInfoPrompt(selectedEvent.name);
       
       addBotMessage(
@@ -270,7 +241,6 @@ export function useChat() {
     }
   }, [selectedEvent, ticketQuantity, addBotMessage]);
 
-  // Handle book event button click
   const bookEvent = useCallback(async (eventId: string) => {
     const matchedEvent = events.find(event => event.id === eventId);
     
@@ -281,7 +251,6 @@ export function useChat() {
     
     setSelectedEvent(matchedEvent);
     
-    // Show ticket quantity selection
     addBotMessage(
       `Great choice! How many tickets would you like to book for "${matchedEvent.name}"?`,
       'ticketQuantity',
@@ -291,7 +260,6 @@ export function useChat() {
     setChatState('ticketQuantity');
   }, [events, addBotMessage]);
 
-  // Select ticket quantity
   const selectTicketQuantity = useCallback(async (eventId: string, quantity: number) => {
     if (!selectedEvent) {
       toast.error('No event selected. Please start over.');
@@ -300,12 +268,10 @@ export function useChat() {
 
     setTicketQuantity(quantity);
     
-    // Calculate total amount
     const priceValue = parseInt(selectedEvent.price.replace(/[^\d]/g, ''));
     const total = `₹${priceValue * quantity}`;
     setTotalAmount(total);
 
-    // Get user info prompt
     const userInfoPrompt = await geminiService.getUserInfoPrompt(selectedEvent.name);
     
     addBotMessage(
@@ -321,7 +287,6 @@ export function useChat() {
     setChatState('userForm');
   }, [selectedEvent, addBotMessage]);
 
-  // Handle user form submission
   const submitUserInfo = useCallback(async (userInfo: UserInfo) => {
     if (!selectedEvent) {
       toast.error('No event selected. Please start over.');
@@ -331,7 +296,6 @@ export function useChat() {
     try {
       console.log('Saving user info to Supabase:', userInfo);
       
-      // Save user info to Supabase
       const userId = await saveUserInfo(userInfo);
       
       if (!userId) {
@@ -340,13 +304,11 @@ export function useChat() {
       
       console.log('User saved with ID:', userId);
       
-      // Generate QR code
       const bookingId = `${selectedEvent.id}-${userId}-${Date.now()}`;
       const qrCodeUrl = await eventsService.generateQRCode(bookingId);
       
       console.log('Generated QR code');
       
-      // Generate ticket PDF with quantity and total amount
       const ticketPdf = await eventsService.generateTicketPDF(
         selectedEvent.name,
         userInfo.name,
@@ -359,36 +321,29 @@ export function useChat() {
       console.log('Generated ticket PDF');
       setTicketPdfUrl(ticketPdf);
       
-      // Save booking to Supabase
-      console.log('Saving booking to Supabase');
       const savedBookingId = await saveBooking(
         selectedEvent.id, 
-        userId, 
-        ticketPdf, 
-        qrCodeUrl
+        userId,
+        ticketPdf
       );
       
       if (!savedBookingId) {
-        // Even if booking save fails, we'll still show the ticket to the user
         console.log('Warning: Failed to save booking, but proceeding with ticket generation');
       } else {
         console.log('Booking saved with ID:', savedBookingId);
       }
       
-      // Get booking confirmation message
       const confirmationMessage = await geminiService.getBookingConfirmation(
         selectedEvent.name,
         userInfo.name
       );
       
-      // Add bot message with ticket
       addBotMessage(
         confirmationMessage,
         'ticket',
         { ticketPdfUrl: ticketPdf }
       );
       
-      // Add thank you message
       setTimeout(() => {
         addBotMessage(
           `Thank you for booking with InfiBot! Your e-ticket has been generated successfully. You can download it or share it directly.`,
@@ -399,14 +354,11 @@ export function useChat() {
       setChatState('complete');
     } catch (error) {
       console.error('Error processing booking:', error);
-      // We'll still try to generate and show the ticket even if there was an error with Supabase
       try {
         if (selectedEvent) {
-          // Generate QR code as fallback
           const fallbackBookingId = `${selectedEvent.id}-fallback-${Date.now()}`;
           const qrCodeUrl = await eventsService.generateQRCode(fallbackBookingId);
           
-          // Generate ticket PDF with quantity and total amount as fallback
           const ticketPdf = await eventsService.generateTicketPDF(
             selectedEvent.name,
             userInfo.name,
@@ -418,13 +370,11 @@ export function useChat() {
           
           setTicketPdfUrl(ticketPdf);
           
-          // Get booking confirmation message
           const confirmationMessage = await geminiService.getBookingConfirmation(
             selectedEvent.name,
             userInfo.name
           );
           
-          // Add bot message with ticket
           addBotMessage(
             confirmationMessage,
             'ticket',
@@ -443,17 +393,14 @@ export function useChat() {
     }
   }, [selectedEvent, ticketQuantity, totalAmount, addBotMessage]);
 
-  // Select city directly from options
   const selectCity = useCallback(async (cityName: string) => {
     await sendMessage(cityName);
   }, [sendMessage]);
 
-  // Select category directly from options
   const selectCategory = useCallback(async (categoryName: string) => {
     await sendMessage(categoryName);
   }, [sendMessage]);
 
-  // Select event directly from options
   const selectEvent = useCallback(async (eventName: string) => {
     await sendMessage(eventName);
   }, [sendMessage]);
