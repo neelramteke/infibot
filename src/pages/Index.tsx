@@ -5,15 +5,11 @@ import { Infinity } from 'lucide-react';
 import ChatInterface from '@/components/ChatInterface';
 import ThemeToggle from '@/components/ThemeToggle';
 import { ThemeProvider } from '@/hooks/useTheme';
-import { BeamsBackground } from '@/components/ui/beams-background';
 
 const Index = () => {
   return (
     <ThemeProvider>
       <div className="min-h-screen flex flex-col">
-        {/* Beams Background */}
-        <BeamsBackground intensity="medium" />
-        
         {/* Header */}
         <header className="fixed w-full top-0 z-10 backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border-b border-border/40 py-4 px-8">
           <div className="container mx-auto flex justify-between items-center">
